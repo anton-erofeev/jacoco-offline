@@ -6,21 +6,26 @@
 trigger:
 - master
 
+variables:
+  System.debug: true
+
 pool:
   vmImage: 'ubuntu-latest'
 
 steps:
-- task: Maven@3
+- bash: |             
+         mvn clean install
+  displayName: Maven command line build
+
+- task: PublishBuildArtifacts@1
   inputs:
-    mavenPomFile: 'pom.xml'
-    mavenOptions: '-Xmx3072m'
-    javaHomeOption: 'JDKVersion'
-    jdkVersionOption: '1.8'
-    jdkArchitectureOption: 'x64'
-    publishJUnitResults: true
-    testResultsFiles: '**/surefire-reports/TEST-*.xml'
-    codeCoverageToolOption: jaCoCo
-    #codeCoverageClassFilter: # Optional. Comma-separated list of filters to include or exclude classes from collecting code coverage. For example: +:com.*,+:org.*,-:my.app*.*
-    codeCoverageClassFilesDirectories: src
-    #codeCoverageSourceDirectories:
-    goals: 'clean package test'
+    pathtoPublish: 'target/site' 
+    artifactName: 'drop'
+
+- task: PublishCodeCoverageResults@1
+  inputs: 
+    codeCoverageTool: JaCoCo
+    summaryFileLocation: '$(System.DefaultWorkingDirectory)/target/site/jacoco/jacoco.xml'
+    reportDirectory: '$(System.DefaultWorkingDirectory)/target/site/jacoco'
+
+
